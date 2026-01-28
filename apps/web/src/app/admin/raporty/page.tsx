@@ -293,10 +293,18 @@ export default function ReportsPage() {
       </div>
 
       <Tabs defaultValue="employees" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="employees">Po pracownikach</TabsTrigger>
-          <TabsTrigger value="categories">Po kategoriach</TabsTrigger>
-          <TabsTrigger value="import-export">Import/Export</TabsTrigger>
+        <TabsList className="w-full sm:w-auto grid grid-cols-3 sm:inline-flex">
+          <TabsTrigger value="employees" className="text-xs sm:text-sm px-2 sm:px-3">
+            <span className="hidden sm:inline">Po pracownikach</span>
+            <span className="sm:hidden">Pracownicy</span>
+          </TabsTrigger>
+          <TabsTrigger value="categories" className="text-xs sm:text-sm px-2 sm:px-3">
+            <span className="hidden sm:inline">Po kategoriach</span>
+            <span className="sm:hidden">Kategorie</span>
+          </TabsTrigger>
+          <TabsTrigger value="import-export" className="text-xs sm:text-sm px-2 sm:px-3">
+            Import/Export
+          </TabsTrigger>
         </TabsList>
 
         {/* Raport po pracownikach */}

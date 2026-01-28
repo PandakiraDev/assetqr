@@ -242,25 +242,91 @@ export function ImportModal({
                 className="hidden"
               />
 
-              <div className="p-4 bg-muted/50 rounded-lg">
-                <h3 className="font-medium mb-2 text-foreground">Format pliku</h3>
-                <p className="text-sm text-muted-foreground mb-2">
-                  Plik powinien zawierać nagłówki kolumn. Obsługiwane kolumny:
-                </p>
-                <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
-                  <li>
-                    <strong>Nazwa</strong> (wymagane) - nazwa przedmiotu
-                  </li>
-                  <li>
-                    <strong>Kategoria</strong> - nazwa kategorii (zostanie utworzona jeśli nie istnieje)
-                  </li>
-                  <li>
-                    <strong>Nr seryjny</strong> - numer seryjny/inwentarzowy
-                  </li>
-                  <li>
-                    <strong>Email właściciela</strong> - email pracownika (musi istnieć w systemie)
-                  </li>
-                </ul>
+              <div className="p-4 bg-muted/50 rounded-lg space-y-4">
+                <div>
+                  <h3 className="font-medium mb-2 text-foreground">Wymagany schemat pliku</h3>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Plik musi zawierać nagłówki w pierwszym wierszu. System automatycznie rozpoznaje kolumny:
+                  </p>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm border-collapse">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="text-left py-2 pr-4 font-medium">Pole</th>
+                          <th className="text-left py-2 pr-4 font-medium">Wymagane</th>
+                          <th className="text-left py-2 font-medium">Rozpoznawane nagłówki</th>
+                        </tr>
+                      </thead>
+                      <tbody className="text-muted-foreground">
+                        <tr className="border-b">
+                          <td className="py-2 pr-4 font-medium text-foreground">Nazwa</td>
+                          <td className="py-2 pr-4 text-green-600 dark:text-green-400">Tak</td>
+                          <td className="py-2"><code className="bg-muted px-1 rounded">Nazwa</code>, <code className="bg-muted px-1 rounded">name</code>, <code className="bg-muted px-1 rounded">przedmiot</code>, <code className="bg-muted px-1 rounded">item</code></td>
+                        </tr>
+                        <tr className="border-b">
+                          <td className="py-2 pr-4 font-medium text-foreground">Kategoria</td>
+                          <td className="py-2 pr-4">Nie</td>
+                          <td className="py-2"><code className="bg-muted px-1 rounded">Kategoria</code>, <code className="bg-muted px-1 rounded">category</code>, <code className="bg-muted px-1 rounded">typ</code>, <code className="bg-muted px-1 rounded">type</code></td>
+                        </tr>
+                        <tr className="border-b">
+                          <td className="py-2 pr-4 font-medium text-foreground">Nr seryjny</td>
+                          <td className="py-2 pr-4">Nie</td>
+                          <td className="py-2"><code className="bg-muted px-1 rounded">Numer seryjny</code>, <code className="bg-muted px-1 rounded">serial</code>, <code className="bg-muted px-1 rounded">nr</code>, <code className="bg-muted px-1 rounded">sn</code>, <code className="bg-muted px-1 rounded">inwentarzowy</code></td>
+                        </tr>
+                        <tr>
+                          <td className="py-2 pr-4 font-medium text-foreground">Właściciel</td>
+                          <td className="py-2 pr-4">Nie</td>
+                          <td className="py-2"><code className="bg-muted px-1 rounded">Email</code>, <code className="bg-muted px-1 rounded">właściciel</code>, <code className="bg-muted px-1 rounded">owner</code>, <code className="bg-muted px-1 rounded">pracownik</code></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="font-medium mb-2 text-foreground">Przykład zawartości pliku:</h4>
+                  <div className="overflow-x-auto bg-background rounded border">
+                    <table className="w-full text-xs">
+                      <thead>
+                        <tr className="border-b bg-muted/50">
+                          <th className="text-left p-2 font-medium">Nazwa</th>
+                          <th className="text-left p-2 font-medium">Kategoria</th>
+                          <th className="text-left p-2 font-medium">Numer seryjny</th>
+                          <th className="text-left p-2 font-medium">Email</th>
+                        </tr>
+                      </thead>
+                      <tbody className="text-muted-foreground">
+                        <tr className="border-b">
+                          <td className="p-2">Laptop Dell XPS 15</td>
+                          <td className="p-2">Laptop</td>
+                          <td className="p-2">SN-2024-001</td>
+                          <td className="p-2">jan.kowalski@firma.pl</td>
+                        </tr>
+                        <tr className="border-b">
+                          <td className="p-2">Monitor LG 27&quot;</td>
+                          <td className="p-2">Monitor</td>
+                          <td className="p-2">SN-2024-002</td>
+                          <td className="p-2">anna.nowak@firma.pl</td>
+                        </tr>
+                        <tr>
+                          <td className="p-2">Biurko regulowane</td>
+                          <td className="p-2">Meble</td>
+                          <td className="p-2"></td>
+                          <td className="p-2"></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div className="text-sm text-muted-foreground space-y-1">
+                  <p><strong className="text-foreground">Uwagi:</strong></p>
+                  <ul className="list-disc list-inside space-y-1 ml-2">
+                    <li>Jeśli kategoria nie istnieje w systemie, zostanie automatycznie utworzona</li>
+                    <li>Właściciel jest dopasowywany po emailu - pracownik musi wcześniej istnieć w systemie</li>
+                    <li>Dla plików CSV zalecane kodowanie: UTF-8</li>
+                  </ul>
+                </div>
               </div>
             </div>
           )}

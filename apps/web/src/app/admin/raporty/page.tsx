@@ -222,16 +222,16 @@ export default function ReportsPage() {
   }, [items, selectedCategory])
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Raporty</h1>
-        <p className="text-muted-foreground mt-1">
+        <h1 className="text-2xl sm:text-3xl font-bold">Raporty</h1>
+        <p className="text-muted-foreground mt-1 text-sm sm:text-base">
           Statystyki i zestawienia inwentarza
         </p>
       </div>
 
       {/* Statystyki ogólne */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-3 sm:gap-4 grid-cols-2 md:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -302,11 +302,11 @@ export default function ReportsPage() {
         {/* Raport po pracownikach */}
         <TabsContent value="employees" className="space-y-4">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
+            <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <CardTitle>Przedmioty według pracowników</CardTitle>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                 <Select value={selectedEmployee} onValueChange={setSelectedEmployee}>
-                  <SelectTrigger className="w-[200px]">
+                  <SelectTrigger className="w-full sm:w-[200px]">
                     <SelectValue placeholder="Wybierz pracownika" />
                   </SelectTrigger>
                   <SelectContent>
@@ -326,9 +326,11 @@ export default function ReportsPage() {
                       `przedmioty-pracownicy-${new Date().toISOString().split('T')[0]}`
                     )
                   }
+                  className="w-full sm:w-auto"
                 >
                   <Download className="h-4 w-4 mr-2" />
-                  Eksport CSV
+                  <span className="hidden sm:inline">Eksport CSV</span>
+                  <span className="sm:hidden">Eksport</span>
                 </Button>
               </div>
             </CardHeader>
@@ -388,11 +390,11 @@ export default function ReportsPage() {
         {/* Raport po kategoriach */}
         <TabsContent value="categories" className="space-y-4">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
+            <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <CardTitle>Przedmioty według kategorii</CardTitle>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                 <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger className="w-[200px]">
+                  <SelectTrigger className="w-full sm:w-[200px]">
                     <SelectValue placeholder="Wybierz kategorię" />
                   </SelectTrigger>
                   <SelectContent>
@@ -415,9 +417,11 @@ export default function ReportsPage() {
                       `przedmioty-kategorie-${new Date().toISOString().split('T')[0]}`
                     )
                   }
+                  className="w-full sm:w-auto"
                 >
                   <Download className="h-4 w-4 mr-2" />
-                  Eksport CSV
+                  <span className="hidden sm:inline">Eksport CSV</span>
+                  <span className="sm:hidden">Eksport</span>
                 </Button>
               </div>
             </CardHeader>

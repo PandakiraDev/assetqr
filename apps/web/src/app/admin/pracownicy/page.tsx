@@ -31,10 +31,16 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { useToast } from '@/components/ui/use-toast'
 import { TableSkeleton } from '@/components/TableSkeleton'
 import { Pagination } from '@/components/ui/pagination'
-import { Plus, Pencil, Trash2, Loader2, Search, User } from 'lucide-react'
+import { Plus, Pencil, Trash2, Loader2, Search, User, MoreVertical, Mail, Phone, Building } from 'lucide-react'
 import type { Employee, EmployeeFormData } from '@/lib/types'
 
 const ITEMS_PER_PAGE = 10
@@ -223,23 +229,79 @@ export default function EmployeesPage() {
     setEmployeeToDelete(null)
   }
 
+  // Komponent karty pracownika dla mobile
+  const EmployeeCard = ({ employee }: { employee: Employee }) => (
+    <div className="p-4 border-b last:border-b-0">
+      <div className="flex items-start gap-3">
+        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+          <User className="h-5 w-5 text-primary" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-medium">
+            {employee.first_name} {employee.last_name}
+          </p>
+          <div className="mt-2 space-y-1 text-sm text-muted-foreground">
+            {employee.email && (
+              <p className="flex items-center gap-2">
+                <Mail className="h-3.5 w-3.5" />
+                <span className="truncate">{employee.email}</span>
+              </p>
+            )}
+            {employee.phone && (
+              <p className="flex items-center gap-2">
+                <Phone className="h-3.5 w-3.5" />
+                {employee.phone}
+              </p>
+            )}
+            {employee.department && (
+              <p className="flex items-center gap-2">
+                <Building className="h-3.5 w-3.5" />
+                {employee.department}
+              </p>
+            )}
+          </div>
+        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="shrink-0">
+              <MoreVertical className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => openEditDialog(employee)}>
+              <Pencil className="h-4 w-4 mr-2" />
+              Edytuj
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => openDeleteDialog(employee)}
+              className="text-destructive"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Usuń
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </div>
+  )
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Pracownicy</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-2xl sm:text-3xl font-bold">Pracownicy</h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
             Zarządzaj listą pracowników
           </p>
         </div>
-        <Button onClick={openAddDialog}>
+        <Button onClick={openAddDialog} className="w-full sm:w-auto">
           <Plus className="h-4 w-4 mr-2" />
           Dodaj pracownika
         </Button>
       </div>
 
       {/* Wyszukiwarka */}
-      <div className="relative max-w-sm">
+      <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           placeholder="Szukaj pracownika..."
@@ -268,54 +330,64 @@ export default function EmployeesPage() {
           </div>
         ) : (
           <>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Imię i nazwisko</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Telefon</TableHead>
-                  <TableHead>Dział</TableHead>
-                  <TableHead className="w-[100px]">Akcje</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {paginatedEmployees.map((employee) => (
-                  <TableRow key={employee.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                          <User className="h-4 w-4 text-primary" />
-                        </div>
-                        <span className="font-medium">
-                          {employee.first_name} {employee.last_name}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell>{employee.email || '-'}</TableCell>
-                    <TableCell>{employee.phone || '-'}</TableCell>
-                    <TableCell>{employee.department || '-'}</TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => openEditDialog(employee)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => openDeleteDialog(employee)}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
-                    </TableCell>
+            {/* Desktop: Tabela */}
+            <div className="hidden md:block">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Imię i nazwisko</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Telefon</TableHead>
+                    <TableHead>Dział</TableHead>
+                    <TableHead className="w-[100px]">Akcje</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {paginatedEmployees.map((employee) => (
+                    <TableRow key={employee.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                            <User className="h-4 w-4 text-primary" />
+                          </div>
+                          <span className="font-medium">
+                            {employee.first_name} {employee.last_name}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell>{employee.email || '-'}</TableCell>
+                      <TableCell>{employee.phone || '-'}</TableCell>
+                      <TableCell>{employee.department || '-'}</TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openEditDialog(employee)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openDeleteDialog(employee)}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+
+            {/* Mobile: Karty */}
+            <div className="md:hidden">
+              {paginatedEmployees.map((employee) => (
+                <EmployeeCard key={employee.id} employee={employee} />
+              ))}
+            </div>
 
             {totalPages > 1 && (
               <Pagination
@@ -339,7 +411,7 @@ export default function EmployeesPage() {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="first_name">Imię *</Label>
                 <Input
@@ -393,11 +465,11 @@ export default function EmployeesPage() {
               />
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)} className="w-full sm:w-auto">
               Anuluj
             </Button>
-            <Button onClick={handleSave} disabled={isSaving}>
+            <Button onClick={handleSave} disabled={isSaving} className="w-full sm:w-auto">
               {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               {editingEmployee ? 'Zapisz' : 'Dodaj'}
             </Button>

@@ -50,7 +50,14 @@ import {
   Search,
   History,
   X,
+  MoreVertical,
 } from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import type { Item, Category, Employee } from '@/lib/types'
 
 type ItemWithRelations = Item & {
@@ -209,16 +216,99 @@ export default function ItemsPage() {
     return filteredItems.filter((item) => selectedItems.has(item.id))
   }
 
+  // Komponent karty przedmiotu dla mobile
+  const ItemCard = ({ item }: { item: ItemWithRelations }) => (
+    <div
+      className={`p-4 border-b last:border-b-0 ${selectedItems.has(item.id) ? 'bg-primary/5' : ''}`}
+    >
+      <div className="flex items-start gap-3">
+        <Checkbox
+          checked={selectedItems.has(item.id)}
+          onCheckedChange={(checked) => handleSelectItem(item.id, !!checked)}
+          className="mt-1"
+        />
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-2">
+            <CategoryIcon categoryName={item.category?.name} size="sm" />
+            <span className="font-medium truncate">{item.name}</span>
+          </div>
+          <div className="space-y-1 text-sm text-muted-foreground">
+            {item.category && (
+              <p>Kategoria: {item.category.name}</p>
+            )}
+            {item.serial_number && (
+              <p className="font-mono">Nr: {item.serial_number}</p>
+            )}
+            {item.current_owner && (
+              <p>Właściciel: {item.current_owner.first_name} {item.current_owner.last_name}</p>
+            )}
+          </div>
+          <div className="mt-2">
+            {getStatusBadge(item)}
+          </div>
+        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="shrink-0">
+              <MoreVertical className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => setQrItem(item)}>
+              <QrCode className="h-4 w-4 mr-2" />
+              Generuj QR
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href={`/admin/przedmioty/${item.id}`}>
+                <Pencil className="h-4 w-4 mr-2" />
+                Edytuj
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href={`/admin/przedmioty/${item.id}/historia`}>
+                <History className="h-4 w-4 mr-2" />
+                Historia
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleArchive(item)}>
+              {item.is_archived ? (
+                <>
+                  <ArchiveRestore className="h-4 w-4 mr-2" />
+                  Przywróć
+                </>
+              ) : (
+                <>
+                  <Archive className="h-4 w-4 mr-2" />
+                  Archiwizuj
+                </>
+              )}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                setItemToDelete(item)
+                setIsDeleteDialogOpen(true)
+              }}
+              className="text-destructive"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Usuń
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </div>
+  )
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Przedmioty</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-2xl sm:text-3xl font-bold">Przedmioty</h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
             Zarządzaj przedmiotami inwentarza
           </p>
         </div>
-        <Button asChild>
+        <Button asChild className="w-full sm:w-auto">
           <Link href="/admin/przedmioty/nowy">
             <Plus className="h-4 w-4 mr-2" />
             Dodaj przedmiot
@@ -227,8 +317,8 @@ export default function ItemsPage() {
       </div>
 
       {/* Filtry */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1 max-w-sm">
+      <div className="flex flex-col gap-3">
+        <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Szukaj..."
@@ -237,57 +327,63 @@ export default function ItemsPage() {
             className="pl-9"
           />
         </div>
-        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-          <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="Kategoria" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Wszystkie kategorie</SelectItem>
-            {categories?.map((cat) => (
-              <SelectItem key={cat.id} value={cat.id}>
-                <div className="flex items-center gap-2">
-                  <CategoryIcon categoryName={cat.name} size="sm" showBackground={false} />
-                  {cat.name}
-                </div>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Wszystkie</SelectItem>
-            <SelectItem value="active">Aktywne</SelectItem>
-            <SelectItem value="available">Wolne</SelectItem>
-            <SelectItem value="assigned">Przypisane</SelectItem>
-            <SelectItem value="archived">Zarchiwizowane</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex gap-2">
+          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+            <SelectTrigger className="flex-1 sm:w-[200px] sm:flex-none">
+              <SelectValue placeholder="Kategoria" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Wszystkie kategorie</SelectItem>
+              {categories?.map((cat) => (
+                <SelectItem key={cat.id} value={cat.id}>
+                  <div className="flex items-center gap-2">
+                    <CategoryIcon categoryName={cat.name} size="sm" showBackground={false} />
+                    {cat.name}
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="flex-1 sm:w-[180px] sm:flex-none">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Wszystkie</SelectItem>
+              <SelectItem value="active">Aktywne</SelectItem>
+              <SelectItem value="available">Wolne</SelectItem>
+              <SelectItem value="assigned">Przypisane</SelectItem>
+              <SelectItem value="archived">Zarchiwizowane</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Pasek zaznaczenia */}
       {isSomeSelected && (
-        <div className="flex items-center gap-4 p-3 bg-primary/5 border border-primary/20 rounded-lg">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3 bg-primary/5 border border-primary/20 rounded-lg">
           <span className="text-sm font-medium">
             Zaznaczono {selectedItems.size} przedmiotów
           </span>
-          <Button
-            size="sm"
-            onClick={() => setIsBulkQROpen(true)}
-          >
-            <QrCode className="h-4 w-4 mr-2" />
-            Generuj QR dla wybranych
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => setSelectedItems(new Set())}
-          >
-            <X className="h-4 w-4 mr-1" />
-            Odznacz
-          </Button>
+          <div className="flex gap-2 w-full sm:w-auto">
+            <Button
+              size="sm"
+              onClick={() => setIsBulkQROpen(true)}
+              className="flex-1 sm:flex-none"
+            >
+              <QrCode className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">Generuj QR dla wybranych</span>
+              <span className="sm:hidden">Generuj QR</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setSelectedItems(new Set())}
+            >
+              <X className="h-4 w-4 sm:mr-1" />
+              <span className="hidden sm:inline">Odznacz</span>
+            </Button>
+          </div>
         </div>
       )}
 
@@ -310,105 +406,122 @@ export default function ItemsPage() {
           </div>
         ) : (
           <>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[50px]">
-                    <Checkbox
-                      checked={isAllSelected}
-                      onCheckedChange={handleSelectAll}
-                    />
-                  </TableHead>
-                  <TableHead>Nazwa</TableHead>
-                  <TableHead>Kategoria</TableHead>
-                  <TableHead>Nr seryjny</TableHead>
-                  <TableHead>Właściciel</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="w-[150px]">Akcje</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {paginatedItems.map((item) => (
-                  <TableRow key={item.id} className={selectedItems.has(item.id) ? 'bg-primary/5' : ''}>
-                    <TableCell>
+            {/* Desktop: Tabela */}
+            <div className="hidden md:block">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[50px]">
                       <Checkbox
-                        checked={selectedItems.has(item.id)}
-                        onCheckedChange={(checked) => handleSelectItem(item.id, !!checked)}
+                        checked={isAllSelected}
+                        onCheckedChange={handleSelectAll}
                       />
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <CategoryIcon categoryName={item.category?.name} size="sm" />
-                        <span className="font-medium">{item.name}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>{item.category?.name || '-'}</TableCell>
-                    <TableCell className="font-mono text-sm">{item.serial_number || '-'}</TableCell>
-                    <TableCell>
-                      {item.current_owner
-                        ? `${item.current_owner.first_name} ${item.current_owner.last_name}`
-                        : '-'}
-                    </TableCell>
-                    <TableCell>{getStatusBadge(item)}</TableCell>
-                    <TableCell>
-                      <div className="flex gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => setQrItem(item)}
-                          title="Generuj QR"
-                        >
-                          <QrCode className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          asChild
-                          title="Edytuj"
-                        >
-                          <Link href={`/admin/przedmioty/${item.id}`}>
-                            <Pencil className="h-4 w-4" />
-                          </Link>
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          asChild
-                          title="Historia"
-                        >
-                          <Link href={`/admin/przedmioty/${item.id}/historia`}>
-                            <History className="h-4 w-4" />
-                          </Link>
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleArchive(item)}
-                          title={item.is_archived ? 'Przywróć' : 'Archiwizuj'}
-                        >
-                          {item.is_archived ? (
-                            <ArchiveRestore className="h-4 w-4" />
-                          ) : (
-                            <Archive className="h-4 w-4" />
-                          )}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => {
-                            setItemToDelete(item)
-                            setIsDeleteDialogOpen(true)
-                          }}
-                          title="Usuń"
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
-                    </TableCell>
+                    </TableHead>
+                    <TableHead>Nazwa</TableHead>
+                    <TableHead>Kategoria</TableHead>
+                    <TableHead>Nr seryjny</TableHead>
+                    <TableHead>Właściciel</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="w-[150px]">Akcje</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {paginatedItems.map((item) => (
+                    <TableRow key={item.id} className={selectedItems.has(item.id) ? 'bg-primary/5' : ''}>
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedItems.has(item.id)}
+                          onCheckedChange={(checked) => handleSelectItem(item.id, !!checked)}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <CategoryIcon categoryName={item.category?.name} size="sm" />
+                          <span className="font-medium">{item.name}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>{item.category?.name || '-'}</TableCell>
+                      <TableCell className="font-mono text-sm">{item.serial_number || '-'}</TableCell>
+                      <TableCell>
+                        {item.current_owner
+                          ? `${item.current_owner.first_name} ${item.current_owner.last_name}`
+                          : '-'}
+                      </TableCell>
+                      <TableCell>{getStatusBadge(item)}</TableCell>
+                      <TableCell>
+                        <div className="flex gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setQrItem(item)}
+                            title="Generuj QR"
+                          >
+                            <QrCode className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            asChild
+                            title="Edytuj"
+                          >
+                            <Link href={`/admin/przedmioty/${item.id}`}>
+                              <Pencil className="h-4 w-4" />
+                            </Link>
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            asChild
+                            title="Historia"
+                          >
+                            <Link href={`/admin/przedmioty/${item.id}/historia`}>
+                              <History className="h-4 w-4" />
+                            </Link>
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleArchive(item)}
+                            title={item.is_archived ? 'Przywróć' : 'Archiwizuj'}
+                          >
+                            {item.is_archived ? (
+                              <ArchiveRestore className="h-4 w-4" />
+                            ) : (
+                              <Archive className="h-4 w-4" />
+                            )}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                              setItemToDelete(item)
+                              setIsDeleteDialogOpen(true)
+                            }}
+                            title="Usuń"
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+
+            {/* Mobile: Karty */}
+            <div className="md:hidden">
+              <div className="p-3 border-b bg-muted/30 flex items-center gap-3">
+                <Checkbox
+                  checked={isAllSelected}
+                  onCheckedChange={handleSelectAll}
+                />
+                <span className="text-sm text-muted-foreground">Zaznacz wszystkie</span>
+              </div>
+              {paginatedItems.map((item) => (
+                <ItemCard key={item.id} item={item} />
+              ))}
+            </div>
 
             {totalPages > 1 && (
               <Pagination

@@ -30,10 +30,16 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { useToast } from '@/components/ui/use-toast'
 import { TableSkeleton } from '@/components/TableSkeleton'
 import { CategoryIcon } from '@/components/CategoryIcon'
-import { Plus, Pencil, Trash2, Loader2 } from 'lucide-react'
+import { Plus, Pencil, Trash2, Loader2, MoreVertical, Calendar } from 'lucide-react'
 import type { Category } from '@/lib/types'
 
 export default function CategoriesPage() {
@@ -170,16 +176,52 @@ export default function CategoriesPage() {
     setCategoryToDelete(null)
   }
 
+  // Komponent karty kategorii dla mobile
+  const CategoryCard = ({ category }: { category: Category }) => (
+    <div className="p-4 border-b last:border-b-0">
+      <div className="flex items-start gap-3">
+        <CategoryIcon categoryName={category.name} size="sm" />
+        <div className="flex-1 min-w-0">
+          <p className="font-medium">{category.name}</p>
+          <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
+            <Calendar className="h-3.5 w-3.5" />
+            {new Date(category.created_at).toLocaleDateString('pl-PL')}
+          </p>
+        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="shrink-0">
+              <MoreVertical className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => openEditDialog(category)}>
+              <Pencil className="h-4 w-4 mr-2" />
+              Edytuj
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => openDeleteDialog(category)}
+              className="text-destructive"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Usuń
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </div>
+  )
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Kategorie</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-2xl sm:text-3xl font-bold">Kategorie</h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
             Zarządzaj kategoriami przedmiotów
           </p>
         </div>
-        <Button onClick={openAddDialog}>
+        <Button onClick={openAddDialog} className="w-full sm:w-auto">
           <Plus className="h-4 w-4 mr-2" />
           Dodaj kategorię
         </Button>
@@ -201,48 +243,60 @@ export default function CategoriesPage() {
             Brak kategorii. Dodaj pierwszą kategorię.
           </div>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nazwa</TableHead>
-                <TableHead>Data utworzenia</TableHead>
-                <TableHead className="w-[100px]">Akcje</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+          <>
+            {/* Desktop: Tabela */}
+            <div className="hidden md:block">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nazwa</TableHead>
+                    <TableHead>Data utworzenia</TableHead>
+                    <TableHead className="w-[100px]">Akcje</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {categories.map((category) => (
+                    <TableRow key={category.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <CategoryIcon categoryName={category.name} size="sm" />
+                          <span className="font-medium">{category.name}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {new Date(category.created_at).toLocaleDateString('pl-PL')}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openEditDialog(category)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openDeleteDialog(category)}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+
+            {/* Mobile: Karty */}
+            <div className="md:hidden">
               {categories.map((category) => (
-                <TableRow key={category.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <CategoryIcon categoryName={category.name} size="sm" />
-                      <span className="font-medium">{category.name}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {new Date(category.created_at).toLocaleDateString('pl-PL')}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => openEditDialog(category)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => openDeleteDialog(category)}
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
+                <CategoryCard key={category.id} category={category} />
               ))}
-            </TableBody>
-          </Table>
+            </div>
+          </>
         )}
       </div>
 
@@ -262,11 +316,11 @@ export default function CategoriesPage() {
               onKeyDown={(e) => e.key === 'Enter' && handleSave()}
             />
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)} className="w-full sm:w-auto">
               Anuluj
             </Button>
-            <Button onClick={handleSave} disabled={isSaving}>
+            <Button onClick={handleSave} disabled={isSaving} className="w-full sm:w-auto">
               {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               {editingCategory ? 'Zapisz' : 'Dodaj'}
             </Button>

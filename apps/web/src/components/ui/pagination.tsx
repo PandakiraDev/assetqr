@@ -22,13 +22,24 @@ export function Pagination({
   const endItem = Math.min(currentPage * itemsPerPage, totalItems || 0)
 
   return (
-    <div className="flex items-center justify-between px-4 py-3 border-t">
-      <div className="text-sm text-muted-foreground">
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t">
+      {/* Info o wynikach - widoczne tylko na większych ekranach */}
+      <div className="text-sm text-muted-foreground hidden sm:block">
         {totalItems !== undefined && (
           <>
             Pokazuje <span className="font-medium">{startItem}</span> -{' '}
             <span className="font-medium">{endItem}</span> z{' '}
             <span className="font-medium">{totalItems}</span> wyników
+          </>
+        )}
+      </div>
+
+      {/* Mobile: uproszczone info */}
+      <div className="text-sm text-muted-foreground sm:hidden">
+        {totalItems !== undefined && (
+          <>
+            Strona <span className="font-medium">{currentPage}</span> z{' '}
+            <span className="font-medium">{totalPages}</span>
           </>
         )}
       </div>
@@ -53,7 +64,8 @@ export function Pagination({
           <ChevronLeft className="h-4 w-4" />
         </Button>
 
-        <div className="flex items-center gap-1 mx-2">
+        {/* Numery stron - ukryte na mobile */}
+        <div className="hidden sm:flex items-center gap-1 mx-2">
           {generatePageNumbers(currentPage, totalPages).map((page, idx) => (
             page === '...' ? (
               <span key={`ellipsis-${idx}`} className="px-2 text-muted-foreground">...</span>
@@ -69,6 +81,13 @@ export function Pagination({
               </Button>
             )
           ))}
+        </div>
+
+        {/* Mobile: pokazuj tylko aktualną stronę */}
+        <div className="flex sm:hidden items-center mx-2">
+          <span className="px-3 py-1 text-sm font-medium bg-primary text-primary-foreground rounded-md">
+            {currentPage}
+          </span>
         </div>
 
         <Button
